@@ -94,8 +94,9 @@ fn main() {
     println!("In file {}", filename);
 
     let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
-
-    let mut tableros: Vec<Tablero> = Vec::new();
+    
+    const MAX_CASILLAS: usize = 1000;
+    let mut tableros: [[u16; MAX_CASILLAS]; MAX_CASILLAS] = [[0; MAX_CASILLAS]; MAX_CASILLAS];
 
     let mut tablero = Tablero {
         tabla: [[Casilla{valor: 0, seleccionada: false}; 5]; 5], 
@@ -107,69 +108,42 @@ fn main() {
     let mut loto = "".split('p');
 
     for line in contents.split('\n') {
-        let cosas = line.split_whitespace();
+        let coord = line.split(" -> ");
 
-        if line.len() > 30 {
-            // primera linea
-            loto = line.split(',');
-            
-        } else if line.len() > 0 {
-            // Tableros
-            let mut j = 0;
-            for cosa in cosas {
-                //print!("{}-", cosa, );
-                tablero.tabla[i][j] = Casilla{valor: cosa.parse().unwrap(), seleccionada: false};
-                j += 1;
-            }
-            i += 1;
-            if i == 5{
-                tableros.push(tablero.clone());
-                tablero = Tablero {
-                    tabla: [[Casilla{valor: 0, seleccionada: false}; 5]; 5], 
-                    total: 0, 
-                    win: false
-                };
-            }
-        } else {
-            i = 0;
-        }
+        let mut x_inicio: u16 = 0;
+        let mut x_final: u16 = 0;
+        let mut y_inicio: u16 = 0;
+        let mut y_final: u16 = 0;
 
-    }
-    //println!("Inicial {:?}", tableros);
-    println!("");
-    //println!("Inicial {:?}", loto);
-    //printTablero(tableros[0]);
-    let max_tableros = tableros.len();
-    let mut tableros_ganadores = 0;
+        let mut inicio: bool = true;
 
-    let mut ganador: u32 = 0;
-    'outer: for n in loto {
-        let number: u32 = n.parse().unwrap();
+        for c in coord{
+            let axis = c.split(",");
+            let mut x: bool = true;
 
-        for t in &mut tableros {
-            
-            if !t.win {
-                for i in 0..5 {
-                    for j in 0..5 {
-                      if t.tabla[i][j].valor == number{
-                        t.tabla[i][j].seleccionada = true;
-                        t.total += 1;
-                        if checkWin(*t){
-                            t.win = true;
-                            // println!("Ganador - {}", number);
-                            // printTablero(*t);
-                            tableros_ganadores += 1;
-                        }
-    
-                        if tableros_ganadores == max_tableros {
-                            ganador = number;
-                            calculaGanador(*t, number);
-                        }
-                      }  
-                    }
+            for a in axis {
+                //println!("{:?}", a);
+                if x && inicio {
+                    x_inicio = a.parse().unwrap();
                 }
+                if !x && inicio {
+                    y_inicio = a.parse().unwrap();
+                }
+                if x && !inicio {
+                    x_final = a.parse().unwrap();
+                }
+                if !x && !inicio {
+                    y_final = a.parse().unwrap();
+                }
+                
+                x = false;
             }
+            inicio = false;
         }
+        
+        println!("{},{} -> {},{}", x_inicio, y_inicio, x_final, y_final);
+        let diff_x = x_inicio - x_final;
+        let diff_y = y_inicio - y_final;
+
     }
-    
 }

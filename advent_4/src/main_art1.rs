@@ -19,7 +19,6 @@ impl std::fmt::Display for Casilla {
 struct Tablero {
     tabla: [[Casilla; 5]; 5],
     total: u8,
-    win: bool,
 }
 
 impl std::fmt::Display for Tablero {
@@ -37,6 +36,20 @@ fn printTablero(t: Tablero){
         print!("\n");
     }
     print!("\n");
+}
+/*
+impl Default for Casilla {
+    fn default() -> Casilla {
+        Casilla {
+            valor: 10,
+            seleccionada: false,
+        }
+    }
+}
+*/
+
+fn print_type_of<T>(_: &T) {
+    println!("{} ", std::any::type_name::<T>())
 }
 
 fn checkWin(t: Tablero) -> bool{
@@ -95,13 +108,15 @@ fn main() {
 
     let contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
 
-    let mut tableros: Vec<Tablero> = Vec::new();
+    let test: Casilla = Default::default();
 
-    let mut tablero = Tablero {
-        tabla: [[Casilla{valor: 0, seleccionada: false}; 5]; 5], 
-        total: 0, 
-        win: false
-    };
+    let mut tableros: Vec<Tablero> = Vec::new();
+    
+    //let mut tablero = [[Casilla{valor: 0, seleccionada: false}; 5]; 5];
+    let mut tablero = Tablero{tabla: [[Casilla{valor: 0, seleccionada: false}; 5]; 5], total: 0};
+
+    let lineas = contents.split('\n');
+    print_type_of(&lineas);
 
     let mut i = 0;
     let mut loto = "".split('p');
@@ -124,11 +139,7 @@ fn main() {
             i += 1;
             if i == 5{
                 tableros.push(tablero.clone());
-                tablero = Tablero {
-                    tabla: [[Casilla{valor: 0, seleccionada: false}; 5]; 5], 
-                    total: 0, 
-                    win: false
-                };
+                tablero = Tablero{tabla: [[Casilla{valor: 0, seleccionada: false}; 5]; 5], total: 0};
             }
         } else {
             i = 0;
@@ -139,34 +150,24 @@ fn main() {
     println!("");
     //println!("Inicial {:?}", loto);
     //printTablero(tableros[0]);
-    let max_tableros = tableros.len();
-    let mut tableros_ganadores = 0;
-
     let mut ganador: u32 = 0;
     'outer: for n in loto {
         let number: u32 = n.parse().unwrap();
 
         for t in &mut tableros {
-            
-            if !t.win {
-                for i in 0..5 {
-                    for j in 0..5 {
-                      if t.tabla[i][j].valor == number{
-                        t.tabla[i][j].seleccionada = true;
-                        t.total += 1;
-                        if checkWin(*t){
-                            t.win = true;
-                            // println!("Ganador - {}", number);
-                            // printTablero(*t);
-                            tableros_ganadores += 1;
-                        }
-    
-                        if tableros_ganadores == max_tableros {
-                            ganador = number;
-                            calculaGanador(*t, number);
-                        }
-                      }  
+            for i in 0..5 {
+                for j in 0..5 {
+                  if t.tabla[i][j].valor == number{
+                    t.tabla[i][j].seleccionada = true;
+                    t.total += 1;
+                    if checkWin(*t){
+                        ganador = number;
+                        println!("Ganador - {}", number);
+                        printTablero(*t);
+                        calculaGanador(*t, number);
+                        break 'outer;
                     }
+                  }  
                 }
             }
         }
