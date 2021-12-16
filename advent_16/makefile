@@ -8,6 +8,7 @@ OBJ = main.o # .c acabados en .o
 
 advent: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+	rm *.o
 
 .PHONY: clean
 
